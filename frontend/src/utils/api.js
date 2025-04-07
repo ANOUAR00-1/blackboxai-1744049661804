@@ -49,7 +49,10 @@ api.interceptors.response.use(
 // Auth endpoints
 export const auth = {
   login: (credentials) => api.post('/login', credentials),
+  signup: (userData) => api.post('/signup', userData),
   logout: () => api.post('/logout'),
+  forgotPassword: (data) => api.post('/forgot-password', data),
+  resetPassword: (token, data) => api.post(`/reset-password/${token}`, data),
 };
 
 // Fuels endpoints
@@ -79,6 +82,13 @@ export const reports = {
     params,
     responseType: 'blob',
   }),
+};
+
+// Dashboard endpoints
+export const dashboard = {
+  getStats: () => api.get('/dashboard/stats'),
+  getRecentSales: () => api.get('/dashboard/recent-sales'),
+  getLowStockAlerts: () => api.get('/dashboard/low-stock-alerts'),
 };
 
 // Error handler helper
