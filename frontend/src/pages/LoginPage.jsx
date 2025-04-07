@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { auth } from '../utils/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -7,7 +8,9 @@ const LoginPage = () => {
     email: '',
     password: ''
   });
+  const location = useLocation();
   const [error, setError] = useState('');
+  const [successMessage] = useState(location.state?.message || '');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -23,17 +26,9 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo purposes - replace with actual authentication
-      if (formData.email === 'admin@example.com' && formData.password === 'password') {
-        localStorage.setItem('token', 'demo-token');
-        navigate('/dashboard');
-      } else {
-        throw new Error('Identifiants invalides');
-      }
+      const response = await auth.login(formData);
+      localStorage.setItem('token', response.data.token);
+      navigate('/dashboard');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -62,6 +57,11 @@ const LoginPage = () => {
 
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {successMessage && (
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+              <p className="text-sm text-green-700">{successMessage}</p>
+            </div>
+          )}
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
               <p className="text-sm text-red-700">{error}</p>
@@ -115,9 +115,12 @@ const LoginPage = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
+              <Link 
+                to="/forgot-password" 
+                className="font-medium text-primary-600 hover:text-primary-500"
+              >
                 Mot de passe oublié?
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -142,10 +145,13 @@ const LoginPage = () => {
         </form>
 
         {/* Footer */}
-        <div className="text-center text-sm text-gray-600">
-          <p>Demo credentials:</p>
-          <p>Email: admin@example.com</p>
-          <p>Password: password</p>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Pas encore de compte ?{' '}
+            <Link to="/signup" className="font-medium text-primary-600 hover:text-primary-500">
+              S'inscrire
+            </Link>
+          </p>
         </div>
       </div>
     </div>
