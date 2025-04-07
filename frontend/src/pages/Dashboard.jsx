@@ -1,41 +1,63 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { dashboard } from '../utils/api';
 
 const Dashboard = () => {
-  // Mock data - replace with API calls in production
-  const stats = {
-    todaySales: {
-      amount: '2,450.00 €',
-      percentage: '+12.5%',
-      isPositive: true
-    },
-    fuelStock: {
-      amount: '15,000 L',
-      percentage: '-8.3%',
-      isPositive: false
-    },
-    monthlyRevenue: {
-      amount: '45,680.00 €',
-      percentage: '+23.1%',
-      isPositive: true
-    },
-    activeCustomers: {
-      amount: '245',
-      percentage: '+4.75%',
-      isPositive: true
-    }
-  };
+  const [stats, setStats] = useState(null);
+  const [recentSales, setRecentSales] = useState([]);
+  const [lowStockAlerts, setLowStockAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const recentSales = [
-    { id: 1, fuel: 'Diesel', quantity: '50L', amount: '89.50 €', date: '2023-08-15 14:30' },
-    { id: 2, fuel: 'Sans Plomb 95', quantity: '35L', amount: '75.25 €', date: '2023-08-15 14:15' },
-    { id: 3, fuel: 'Sans Plomb 98', quantity: '40L', amount: '92.00 €', date: '2023-08-15 14:00' },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [statsData, salesData, alertsData] = await Promise.all([
+          dashboard.getStats(),
+          dashboard.getRecentSales(),
+          dashboard.getLowStockAlerts()
+        ]);
 
-  const lowStockAlerts = [
-    { id: 1, fuel: 'Diesel', currentStock: '1,500L', threshold: '2,000L' },
-    { id: 2, fuel: 'Sans Plomb 95', currentStock: '1,200L', threshold: '1,500L' },
-  ];
+        setStats(statsData.data);
+        setRecentSales(salesData.data);
+        setLowStockAlerts(alertsData.data);
+      } catch (err) {
+        setError('Erreur lors du chargement des données');
+        console.error('Dashboard data fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+        <p className="text-red-700">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-2 text-red-600 hover:text-red-800"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return null;
+  }
 
   return (
     <div className="space-y-6">
