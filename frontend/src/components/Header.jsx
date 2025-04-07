@@ -1,12 +1,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { auth } from '../utils/api';
 
 const Header = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await auth.logout();
+      localStorage.removeItem('token');
+      navigate('/login', { 
+        state: { message: 'Vous avez été déconnecté avec succès.' }
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Force logout even if API call fails
+      localStorage.removeItem('token');
+      navigate('/login');
+    }
   };
 
   return (
